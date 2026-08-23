@@ -1,0 +1,28 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+
+# Local publish packages and historical builds
+publish/
+publish*/
+*.zip
+*.7z
+
+# Superseded runtimes and experiments
+lib/
+mpv-runtime/
+
+# Local diagnostics and screenshots
+debug-*.png
+crop-*.png
+regression-*.png
+exe-icon-check.png
+*.log
+
+# IDE and OS files
+.vs/
+.idea/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini

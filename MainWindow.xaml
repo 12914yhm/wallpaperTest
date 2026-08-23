@@ -1,0 +1,93 @@
+<Window x:Class="DWD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DWD · 动态壁纸" Width="1060" Height="680"
+        MinWidth="900" MinHeight="580" Background="{StaticResource SurfaceBrush}"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="False"
+        Icon="assets/app-icon.ico">
+    <Grid>
+        <Grid.RowDefinitions><RowDefinition Height="64"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="#1B1C21" BorderBrush="#2D2E36" BorderThickness="0,0,0,1" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid Margin="24,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentBrush}">
+                        <Image Source="assets/app-icon.png" Stretch="UniformToFill"/>
+                    </Border>
+                    <TextBlock Text="DWD" Foreground="White" FontSize="19" FontWeight="SemiBold" Margin="11,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="动态壁纸" Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="9,3,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="−" Click="Minimize_Click" Style="{StaticResource ChromeButton}"/>
+                    <Button Content="×" Click="Close_Click" Style="{StaticResource ChromeButton}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" CornerRadius="14" Background="#0D0E11" Margin="0,0,22,0" Clip="M 0,0 L 0,500 L 760,500 L 760,0 Z">
+                <Grid x:Name="PreviewSurface" SizeChanged="PreviewSurface_SizeChanged">
+                    <MediaElement x:Name="WallpaperPreview" LoadedBehavior="Manual" UnloadedBehavior="Stop" Stretch="Uniform"
+                                  MediaOpened="WallpaperPreview_MediaOpened" MediaEnded="WallpaperPreview_MediaEnded"/>
+                    <Canvas x:Name="CropCanvas" Visibility="Collapsed" Background="Transparent">
+                        <Border x:Name="CropShadeTop" Background="#99000000" IsHitTestVisible="False"/>
+                        <Border x:Name="CropShadeBottom" Background="#99000000" IsHitTestVisible="False"/>
+                        <Border x:Name="CropShadeLeft" Background="#99000000" IsHitTestVisible="False"/>
+                        <Border x:Name="CropShadeRight" Background="#99000000" IsHitTestVisible="False"/>
+                        <Border x:Name="CropFrame" BorderBrush="#A994FF" BorderThickness="3" CornerRadius="4"
+                                Background="#08000000" Cursor="SizeAll"
+                                MouseLeftButtonDown="CropFrame_MouseLeftButtonDown"
+                                MouseMove="CropFrame_MouseMove"
+                                MouseLeftButtonUp="CropFrame_MouseLeftButtonUp">
+                            <TextBlock x:Name="CropInstructionText" Text="16:9 · 两个屏幕显示同一选区" Foreground="White" Background="#B0000000"
+                                       Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Top"
+                                       Margin="0,8,0,0" FontSize="12"/>
+                        </Border>
+                    </Canvas>
+                    <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="◈" FontSize="46" Foreground="#454753" HorizontalAlignment="Center"/>
+                        <TextBlock Text="导入一个视频开始" Foreground="#E7E7ED" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                        <TextBlock Text="MP4 · WebM · AVI · MOV" Foreground="{StaticResource MutedBrush}" FontSize="12" HorizontalAlignment="Center" Margin="0,7,0,0"/>
+                    </StackPanel>
+                    <Border VerticalAlignment="Bottom" Background="#B5000000" Padding="18,13" Visibility="Collapsed" x:Name="PreviewBar">
+                        <DockPanel>
+                            <TextBlock x:Name="FileNameText" Foreground="White" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </Border>
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="我的壁纸" Foreground="White" FontSize="21" FontWeight="SemiBold"/>
+                <TextBlock Text="轻量、安静地运行在桌面上" Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="0,7,0,25"/>
+                <Border Background="{StaticResource PanelBrush}" CornerRadius="12" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="当前视频" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
+                        <TextBlock x:Name="CurrentVideoText" Text="尚未选择" Foreground="White" FontSize="14" TextTrimming="CharacterEllipsis" Margin="0,8,0,0"/>
+                        <Button Content="选择视频" Click="ChooseVideo_Click" Style="{StaticResource SecondaryButton}" Margin="0,14,0,0"/>
+                        <Button x:Name="AspectModeButton" Content="当前比例：16:9 · 每屏相同  ▾" Click="AspectModeButton_Click"
+                                Style="{StaticResource SecondaryButton}" Margin="0,12,0,0">
+                            <Button.ContextMenu>
+                                <ContextMenu Placement="Bottom">
+                                    <MenuItem x:Name="PerMonitorModeMenuItem" Header="16:9 · 每屏相同" IsCheckable="True" IsChecked="True"
+                                              Click="SelectPerMonitorMode_Click"/>
+                                    <MenuItem x:Name="SpanModeMenuItem" Header="跨屏拼接" IsCheckable="True"
+                                              Click="SelectSpanMode_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                        <Button Content="应用到桌面" Click="SetWallpaper_Click" Style="{StaticResource PrimaryButton}" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="播放设置" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,30,0,13"/>
+                <Border Background="{StaticResource PanelBrush}" CornerRadius="12" Padding="18">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,17"><TextBlock Text="循环播放" Foreground="#E7E7ED"/><CheckBox x:Name="LoopCheck" IsChecked="True" DockPanel.Dock="Right"/></DockPanel>
+                        <DockPanel><TextBlock Text="静音播放" Foreground="#E7E7ED"/><CheckBox x:Name="MuteCheck" IsChecked="True" DockPanel.Dock="Right" Checked="MuteCheck_Changed" Unchecked="MuteCheck_Changed"/></DockPanel>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="性能状态" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,30,0,13"/>
+                <Border Background="#14251F" CornerRadius="12" Padding="18"><DockPanel><TextBlock Text="●" Foreground="#58D68D" FontSize="12"/><TextBlock Text="  硬件加速已启用" Foreground="#A5E5C2" FontSize="13" Margin="5,0,0,0"/></DockPanel></Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

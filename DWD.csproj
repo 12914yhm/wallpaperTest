@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>DWD</AssemblyName>
+    <RootNamespace>DWD</RootNamespace>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="assets\app-icon.ico" />
+    <Resource Include="assets\app-icon.png" />
+    <Content Include="player\mpv.exe" Link="player\mpv.exe" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <Content Include="player\d3dcompiler_43.dll" Link="player\d3dcompiler_43.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <Content Include="player\fonts.conf" Link="player\fonts.conf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  <Target Name="CopyPlayerRuntime" AfterTargets="Publish">
+    <ItemGroup>
+      <PlayerRuntime Include="player\mpv.exe" />
+      <PlayerRuntime Include="player\d3dcompiler_43.dll" />
+      <PlayerRuntime Include="player\fonts.conf" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PlayerRuntime)"
+          DestinationFiles="@(PlayerRuntime->'$(PublishDir)%(RelativeDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>
