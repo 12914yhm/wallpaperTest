@@ -1,28 +1,25 @@
-# .NET build output
-[Bb]in/
-[Oo]bj/
+# Local build and runnable output (including user settings and usage data)
+DWD.Native.Effects/build/
+DWD.Native.Effects/publish/
+DWD.Native.Effects/.vs/
+DWD.Native.Effects/out/
 
-# Local publish packages and historical builds
-publish/
-publish*/
-*.zip
-*.7z
-
-# Superseded runtimes and experiments
-lib/
-mpv-runtime/
-
-# Local diagnostics and screenshots
-debug-*.png
-crop-*.png
-regression-*.png
-exe-icon-check.png
-*.log
-
-# IDE and OS files
-.vs/
-.idea/
+# IDE, diagnostics and temporary media
 *.user
 *.suo
+*.VC.db
+*.opendb
+*.pdb
+*.ilk
+*.obj
+*.tlog
+*.lastbuildstate
+*.log
+*.zip
+*.7z
+debug-*.png
+*-test.png
+*-preview.png
+*-diagnostic.png
 Thumbs.db
 Desktop.ini

@@ -1,0 +1,32 @@
+#include <windows.h>
+#pragma code_page(65001)
+
+// 资源 ID 必须与 Controller.cpp 的 kAppIconResource 保持一致。
+// 把 ICO 编译进 EXE 后，Explorer、标题栏、任务栏和托盘都能加载同一套多尺寸图标。
+#define IDI_DWD_APP 101
+
+IDI_DWD_APP ICON "app.ico"
+
+// Windows 文件属性和使用时长统计显示 DWD，而不是内部可执行文件名。
+1 VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "DWD\0"
+            VALUE "ProductName", "DWD 动态壁纸\0"
+            VALUE "FileVersion", "1.0.0.0\0"
+            VALUE "OriginalFilename", "DWDNative.exe\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
