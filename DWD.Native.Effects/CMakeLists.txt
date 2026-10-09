@@ -10,6 +10,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Controller 是前台控制器；Player 是同一 EXE 的 --player 后台模式；
 # app.rc/app.ico 把图标真正嵌入 PE 资源，而不是只在运行时设置窗口图标。
 add_executable(DWDNative WIN32 src/Controller.cpp src/Player.cpp src/EffectsRenderer.cpp src/ProxyTranscoder.cpp src/ProxyTranscoder.h
+                               src/StaticWallpaper.h
                                src/PreviewPlayer.cpp src/PreviewPlayer.h
                                src/SharedPreviewRenderer.cpp src/SharedPreviewRenderer.h
                                src/UsageTracker.cpp src/UsageTracker.h

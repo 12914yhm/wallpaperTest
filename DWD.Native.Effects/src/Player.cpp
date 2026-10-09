@@ -26,6 +26,7 @@
 #include "FrameTiming.h"
 #include "EffectsRenderer.h"
 #include "ImageSource.h"
+#include "StaticWallpaper.h"
 
 // 本文件实现 DWDNative.exe 的“后台播放器模式”。总体数据流：
 //
@@ -1018,16 +1019,6 @@ LRESULT CALLBACK WallpaperProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lP
     return DefWindowProcW(hwnd, message, wParam, lParam);
 }
 
-void RestoreStaticWallpaper() {
-    wchar_t staticWallpaper[32768]{};
-    if (SystemParametersInfoW(SPI_GETDESKWALLPAPER, static_cast<UINT>(std::size(staticWallpaper)),
-                              staticWallpaper, 0) && staticWallpaper[0]) {
-        SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, staticWallpaper, SPIF_SENDCHANGE);
-    } else {
-        SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETDESKWALLPAPER, 0,
-                            SMTO_ABORTIFHUNG, 1000, nullptr);
-    }
-}
 }
 
 int RunPlayer(HINSTANCE instance) {
@@ -1161,7 +1152,8 @@ int RunPlayer(HINSTANCE instance) {
     // 正常切换壁纸时由控制器显式发 stopEvent，不恢复静态壁纸；只有父控制器意外消失
     // 才在这里兜底恢复，避免桌面永久停留在最后一帧或黑色 WorkerW。
     // 新播放器尚未显示首帧就失败时，不能干扰仍在运行的旧壁纸。
-    if (!g_previewParent && (restoreWallpaper || (g_playbackFailed && g_hadReadyFrame))) RestoreStaticWallpaper();
+    if (!g_previewParent && (restoreWallpaper || (g_playbackFailed && g_hadReadyFrame)))
+        StaticWallpaper::Restore();
 
     MFShutdown();
     CoUninitialize();

@@ -29,6 +29,7 @@
 #include "ScaledBitmapCache.h"
 #include "LibraryPreferences.h"
 #include "ImageSource.h"
+#include "StaticWallpaper.h"
 #include <map>
 #include <set>
 #include <algorithm>
@@ -608,19 +609,6 @@ std::wstring ExeDirectory() {
     GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
     PathRemoveFileSpecW(buffer.data());
     return buffer.data();
-}
-
-void RestoreStaticWallpaper() {
-    // 动态壁纸实际位于 WorkerW；退出时重新设置一次 Windows 当前静态壁纸，
-    // 目的是让 Explorer 刷新桌面层，而不是维护另一份壁纸路径。
-    wchar_t staticWallpaper[32768]{};
-    if (SystemParametersInfoW(SPI_GETDESKWALLPAPER, static_cast<UINT>(std::size(staticWallpaper)),
-                              staticWallpaper, 0) && staticWallpaper[0]) {
-        SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, staticWallpaper, SPIF_SENDCHANGE);
-    } else {
-        SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETDESKWALLPAPER, 0,
-                            SMTO_ABORTIFHUNG, 1000, nullptr);
-    }
 }
 
 HICON LoadAppIcon(int width, int height) {
@@ -1269,10 +1257,16 @@ void CloseHandles(PlayerInstance& player) {
     player = {};
 }
 
-void StopPlayer(PlayerInstance& player, bool restoreWallpaper) {
+bool StopPlayer(PlayerInstance& player, bool restoreWallpaper) {
     g_processCleanup.Retire(player.process, player.stopEvent, player.readyEvent, player.pauseEvent);
     player = {};
-    if (restoreWallpaper) RestoreStaticWallpaper();
+    if (restoreWallpaper) {
+        // 先等播放器的 WorkerW 子窗口真正消失，再让 Windows 重绘静态壁纸。
+        // 反过来会让晚一步销毁的交换链覆盖刚恢复的画面，出现黑桌面。
+        g_processCleanup.Drain();
+        return StaticWallpaper::Restore();
+    }
+    return true;
 }
 
 void SetStatus(HWND owner, const std::wstring& text, COLORREF color) {
@@ -2449,7 +2443,7 @@ void StopWallpaper(HWND owner) {
     if (g_applying) return;
     StopProxyJob();
     StopSharedPreview(owner);
-    StopPlayer(g_player, true);
+    const bool restored = StopPlayer(g_player, true);
     g_wallpaperPaused = false;
     g_lastWallpaper.clear();
     g_recoveryAttempts = 0;
@@ -2457,7 +2451,9 @@ void StopWallpaper(HWND owner) {
     SetWindowTextW(g_extraButtons[kPauseButton], L"暂停壁纸");
     LayoutControls(owner);
     if (!g_inTray && !g_settingsOpen) ScheduleCurrentPreview(owner, true);
-    SetStatus(owner, L"已恢复 Windows 静态壁纸", kSuccess);
+    SetStatus(owner, restored ? L"已恢复 Windows 静态壁纸" :
+              L"静态壁纸恢复失败 · 请在 Windows 设置中重新选择图片",
+              restored ? kSuccess : kError);
 }
 
 // 只认自己的缓存命名，不递归删除用户指定目录，更不删除原始视频。
@@ -4141,7 +4137,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
         ClearVideoLibrary();
         StopPlayer(g_player, true);
         g_processCleanup.Drain();
-        RestoreStaticWallpaper();
         if (!g_configStore.Flush()) RuntimeLog(L"Configuration save failed during exit");
         // 清理后台已投递而窗口来不及接收的结果，避免泄漏 GDI 位图。
         {
@@ -4385,6 +4380,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int showCommand) {
     CoUninitialize();
     if(g_developmentExit) CloseHandle(g_developmentExit);
     CloseHandle(singleInstance);
-    RuntimeLog(L"Controller exited; wallpaper restored");
+    RuntimeLog(L"Controller exited");
     return static_cast<int>(message.wParam);
 }
